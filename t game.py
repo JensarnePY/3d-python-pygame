@@ -29,7 +29,6 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             ]
         
         global pos2
-        pos2 = False
         i = 0
         for point in points:
             
@@ -54,6 +53,7 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             i += 1
     
     if render == False:
+        pos2 = False
         
         if (camera[0] < pos[0] or camera[0] > pos[0]+1):
             if camera[0] >= (pos[0]+1) and side[0] == False:
@@ -228,7 +228,7 @@ while run == True:
     
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
 
-    movd = [True,True]
+    movd = [False,False]
     pg.display.set_caption(f"FPS {FPS}  frime:{s}        {rot}       {camera}")
     pg.display.update()
 pg.quit()
