@@ -33,8 +33,8 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
         for point in points:
             
             x = point[0] - camera[0]
-            y = point[1] - camera[1]
-            z = point[2] - camera[2]
+            z = point[1] - camera[1]
+            y = point[2] - camera[2]
             
             x1 = x * math.cos(angle[0]) - z * math.sin(angle[0])
             z1 = x * math.sin(angle[0]) + z * math.cos(angle[0])
