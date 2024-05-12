@@ -2,15 +2,14 @@ import pygame as pg
 import math
 import time
 import noise
-import random as r
 
 pg.init()
 
-WINDOW_SIZE = [1400, 750]
+WINDOW_SIZE = [750, 500]
 screen = pg.display.set_mode(WINDOW_SIZE)
 
 FOV = 70
-camera = [0,-2,0]
+camera = [0,-1,0]
 rot = [0,0]
 movd = [True,True]
 
@@ -18,19 +17,19 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
     
     if movd[0] == True or movd[1] == True:
         render = False
-        points = []
+        points = [
+            [pos[0],pos[1],pos[2]],
+            [pos[0]+1,pos[1],pos[2]],
+            [pos[0]+1,pos[1]+1,pos[2]],
+            [pos[0],pos[1]+1,pos[2]],
+            [pos[0],pos[1],pos[2]+1],
+            [pos[0]+1,pos[1],pos[2]+1],
+            [pos[0]+1,pos[1]+1,pos[2]+1],
+            [pos[0],pos[1]+1,pos[2]+1]
+            ]
         
         global pos2
-        
-        points.append([pos[0],pos[1],pos[2]])
-        points.append([pos[0]+1,pos[1],pos[2]])
-        points.append([pos[0]+1,pos[1]+1,pos[2]])
-        points.append([pos[0],pos[1]+1,pos[2]])
-        points.append([pos[0],pos[1],pos[2]+1])
-        points.append([pos[0]+1,pos[1],pos[2]+1])
-        points.append([pos[0]+1,pos[1]+1,pos[2]+1])
-        points.append([pos[0],pos[1]+1,pos[2]+1])
-        
+        pos2 = False
         i = 0
         for point in points:
             
@@ -42,9 +41,6 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             z1 = x * math.sin(angle[0]) + z * math.cos(angle[0])
             y1 = y * math.cos(angle[1]) - z1 * math.sin(angle[1])
             z2 = y * math.sin(angle[1]) + z1 * math.cos(angle[1])
-            
-            if i == 0:
-                pos2 = [round(x1),round(y1),round(z2)]
             
             scale = 600 / ((2 * math.tan(FOV / 2) * z2)+.1)
             
@@ -59,24 +55,37 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
     
     if render == False:
         
-        if camera[0] >= (pos[0]+1) and side[0] == False:
-            pg.draw.polygon(screen, (36,27,40), ((points[1]), (points[2]), (points[6]), (points[5])))
-        if camera[0] < (pos[0]) and side[1] == False:
-            pg.draw.polygon(screen, (43,73,72), ((points[3]), (points[7]), (points[4]), (points[0])))
+        if (camera[0] < pos[0] or camera[0] > pos[0]+1):
+            if camera[0] >= (pos[0]+1) and side[0] == False:
+                e = pg.draw.polygon(screen, (36,27,40), ((points[1]), (points[2]), (points[6]), (points[5])))
+                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                    pos2 = True
+            if camera[0] < (pos[0]) and side[1] == False:
+                e = pg.draw.polygon(screen, (43,73,72), ((points[3]), (points[7]), (points[4]), (points[0])))
+                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                    pos2 = True
             
         if (camera[1] < pos[1] or camera[1] > pos[1]+1):
             if camera[1] >= (pos[1]+.5) and side[2] == False:
-                pg.draw.polygon(screen, (67,67,67), ((points[7]), (points[6]), (points[2]), (points[3])))
+                e = pg.draw.polygon(screen, (67,67,67), ((points[7]), (points[6]), (points[2]), (points[3])))
+                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                    pos2 = True
             if camera[1] < (pos[1]+.5) and side[3] == False:
-                pg.draw.polygon(screen, (11,11,11), ((points[0]), (points[1]), (points[5]), (points[4])))
+                e = pg.draw.polygon(screen, (11,11,11), ((points[0]), (points[1]), (points[5]), (points[4])))
+                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                    pos2 = True
         
         if camera[2] >= pos[2]+1 and side[4] == False:
-            pg.draw.polygon(screen, (26,158,44), ((points[4]), (points[5]), (points[6]), (points[7])))
+            e = pg.draw.polygon(screen, (26,158,44), ((points[4]), (points[5]), (points[6]), (points[7])))
+            if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                pos2 = True
         if camera[2] < pos[2] and side[5] == False:
-            pg.draw.polygon(screen, (255,255,255), ((points[0]), (points[1]), (points[2]), (points[3])))
+            e = pg.draw.polygon(screen, (255,255,255), ((points[0]), (points[1]), (points[2]), (points[3])))
+            if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                pos2 = True
     return points, render, pos2
 
-def faie(pos):
+def faie(pos: list):
     c2 = 0
     for ii in blocks:
         
@@ -97,15 +106,11 @@ def faie(pos):
         c2 += 1
 
 blocks = []
-for x in range(50):
-    for y in range(50):
-        for z in range(1):
-            v = noise.pnoise2(x/10, y/10, octaves=2) * 5
-            
-            v = round(v)
-
-
-            blocks.append([x,v,y,[],[False, False, False, False, False, False], False])
+for x in range(40):
+    for y in range(40):
+        v = noise.pnoise2(x/10, y/10, octaves=1) * 5 - 3
+        v = round(v)
+        blocks.append([x,v,y,[],[False, False, False, False, False, False], False])
 
 
 
@@ -136,8 +141,9 @@ q2 = 0
 list1 = []
 player_speed = 10
 run = True
-rot = [0,0]
+action = []
 pg.mouse.set_visible(False)
+action.append(0)
 while run == True:
     if time.time()-t >= 1:
         t = time.time()
@@ -153,7 +159,7 @@ while run == True:
         
     global keys
     keys = pg.key.get_pressed()
-    mouse = pg.mouse.get_pressed()[0]
+    mouse = pg.mouse
 
     if keys[pg.K_a]:
         movd[0] = True
@@ -182,13 +188,12 @@ while run == True:
     
     rel = pg.mouse.get_rel()
     mouse_pos = pg.mouse.get_pos()
-    rot[0] += (rel[0]/20*dt)
-    rot[1] += (rel[1]/20*dt)
+    rot[0] += rel[0]/20*dt
+    rot[1] += rel[1]/20*dt
     if rel != (0,0):
         movd[1] = True
     
-    pg.mouse.set_pos(WINDOW_SIZE[0]//2,WINDOW_SIZE[1]//2)
-
+    mouse.set_pos(WINDOW_SIZE[0]//2,WINDOW_SIZE[1]//2)
     screen.fill((36,121,150))
     
     if movd[0] == True:
@@ -207,25 +212,23 @@ while run == True:
         for i in list1:
             blocks[ii] = i[2]
             ii += 1
+    
+    if action != []:
+        for i in action:
+            if i == 0:
+                rot = [0,0]
+
+        action = []
 
     for i in blocks:
-        
         i[3], i[5], pos = update(camera,i,rot,i[3],movd,i[5],i[4])
-        
-        if pos == [0,0,1] and mouse:
+        if mouse.get_pressed()[2] and pos == True:
             blocks.remove(i)
             faie([i[0],i[1],i[2]])
-        elif pos == [0,0,2] and mouse:
-            blocks.remove(i)
-            faie([i[0],i[1],i[2]])
-        elif pos == [0,0,3] and mouse:
-            blocks.remove(i)
-            faie([i[0],i[1],i[2]])
-        elif pos == [0,0,4] and mouse:
-            blocks.remove(i)
-            faie([i[0],i[1],i[2]])
+    
+    pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
 
-    movd = [False,False]
+    movd = [True,True]
     pg.display.set_caption(f"FPS {FPS}  frime:{s}        {rot}       {camera}")
     pg.display.update()
 pg.quit()
