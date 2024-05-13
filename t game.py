@@ -28,8 +28,6 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             [pos[0],pos[1]+1,pos[2]+1]
             ]
         
-        global pos2
-        
         i = 0
         for point in points:
             
@@ -54,6 +52,7 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             i += 1
     
     if render == False:
+        global pos2
         pos2 = False
         
         if (camera[0] < pos[0] or camera[0] > pos[0]+1):
@@ -90,20 +89,20 @@ def faie(pos: list):
     c2 = 0
     for ii in blocks:
         
-        if [ii[0]+1,ii[1],ii[2]] == pos:
-            blocks[c2][4][0] = False
-        if [ii[0]-1,ii[1],ii[2]] == pos:
-            blocks[c2][4][1] = False
+        if [ii[1]+1,ii[2],ii[3]] == pos:
+            blocks[c2][5][0] = False
+        if [ii[1]-1,ii[2],ii[3]] == pos:
+            blocks[c2][5][1] = False
 
-        if [ii[0],ii[1],ii[2]+1] == pos:
-            blocks[c2][4][4] = False 
-        if [ii[0],ii[1],ii[2]-1] == pos:
-            blocks[c2][4][5] = False 
+        if [ii[1],ii[2],ii[3]+1] == pos:
+            blocks[c2][5][4] = False 
+        if [ii[1],ii[2],ii[3]-1] == pos:
+            blocks[c2][5][5] = False 
 
-        if [ii[0],ii[1]+1,ii[2]] == pos:
-            blocks[c2][4][2] = False
-        if [ii[0],ii[1]-1,ii[2]] == pos:
-            blocks[c2][4][3] = False
+        if [ii[1],ii[2]+1,ii[3]] == pos:
+            blocks[c2][5][2] = False
+        if [ii[1],ii[2]-1,ii[3]] == pos:
+            blocks[c2][5][3] = False
         c2 += 1
 
 blocks = []
@@ -111,35 +110,38 @@ for x in range(40):
     for y in range(40):
         v = noise.pnoise2(x/10, y/10, octaves=1) * 5 - 3
         v = round(v)
-        blocks.append([x,v,y,[],[False, False, False, False, False, False], False])
+        db = (x+.5-camera[0])*(x+.5-camera[0])+(v+.5-camera[1])*(v+.5-camera[1])+(y+.5-camera[2])*(y+.5-camera[2])
+        
+        blocks.append([db,x,v,y,[],[False, False, False, False, False, False], False])
 
 
 
 c1 = 0
 for i in blocks:
-    pos = [i[0],i[1],i[2]]
+    pos = [i[1],i[2],i[3]]
     c2 = 0
     for ii in blocks:
-        if [ii[0]+1,ii[1],ii[2]] == pos:
-            blocks[c1][4][1] = True
-            blocks[c2][4][0] = True
+        if [ii[1]+1,ii[2],ii[3]] == pos:
+            blocks[c1][5][1] = True
+            blocks[c2][5][0] = True
 
-        if [ii[0],ii[1],ii[2]+1] == pos:
-            blocks[c1][4][5] = True
-            blocks[c2][4][4] = True 
+        if [ii[1],ii[2],ii[3]+1] == pos:
+            blocks[c1][5][5] = True
+            blocks[c2][5][4] = True 
 
-        if [ii[0],ii[1]+1,ii[2]] == pos:
-            blocks[c1][4][3] = True
-            blocks[c2][4][2] = True
+        if [ii[1],ii[2]+1,ii[3]] == pos:
+            blocks[c1][5][3] = True
+            blocks[c2][5][2] = True
         c2 += 1
     c1 += 1
+
+
  
 t = time.time()
 s = 0
 FPS = None
 dt=1
 q2 = 0
-list1 = []
 player_speed = 10
 run = True
 action = []
@@ -198,38 +200,23 @@ while run == True:
     screen.fill((36,121,150))
     
     if movd[0] == True:
-        list1 = []
-        ii = 0
+        
         for i in blocks:
-            
             pos = i
-            db = (pos[0]+.5-camera[0])*(pos[0]+.5-camera[0])+(pos[1]+.5-camera[1])*(pos[1]+.5-camera[1])+(pos[2]+.5-camera[2])*(pos[2]+.5-camera[2])
-            
-            list1.append([db, ii, pos])
-            ii+= 1
-            
-        list1.sort(reverse=True)
-        ii = 0
-        for i in list1:
-            blocks[ii] = i[2]
-            ii += 1
-    
-    if action != []:
-        for i in action:
-            if i == 0:
-                rot = [0,0]
-
+            db = (pos[1]+.5-camera[0])*(pos[1]+.5-camera[0])+(pos[2]+.5-camera[1])*(pos[2]+.5-camera[1])+(pos[3]+.5-camera[2])*(pos[3]+.5-camera[2])
+            i[0] = db  
+        blocks.sort(reverse=True)
         action = []
 
     for i in blocks:
-        i[3], i[5], pos = update(camera,i,rot,i[3],movd,i[5],i[4])
+        i[4], i[6], pos = update(camera,[i[1],i[2],i[3]],rot,i[4],movd,i[6],i[5])
         if mouse.get_pressed()[2] and pos == True:
             blocks.remove(i)
-            faie([i[0],i[1],i[2]])
+            faie([i[1],i[2],i[3]])
     
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
 
-    movd = [True,True]
+    movd = [False,False]
     pg.display.set_caption(f"FPS {FPS}  frime:{s}        {rot}       {camera}")
     pg.display.update()
 pg.quit()
