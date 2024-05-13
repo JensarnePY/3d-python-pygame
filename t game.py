@@ -29,12 +29,13 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
             ]
         
         global pos2
+        
         i = 0
         for point in points:
             
             x = point[0] - camera[0]
-            z = point[1] - camera[1]
-            y = point[2] - camera[2]
+            y = point[1] - camera[1]
+            z = point[2] - camera[2]
             
             x1 = x * math.cos(angle[0]) - z * math.sin(angle[0])
             z1 = x * math.sin(angle[0]) + z * math.cos(angle[0])
@@ -228,7 +229,7 @@ while run == True:
     
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
 
-    movd = [False,False]
+    movd = [True,True]
     pg.display.set_caption(f"FPS {FPS}  frime:{s}        {rot}       {camera}")
     pg.display.update()
 pg.quit()
