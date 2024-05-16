@@ -15,7 +15,7 @@ movd = [True,True]
 
 def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bool, side: list[bool]):
     
-    if movd[0] == True or movd[1] == True:
+    if movd[0] == True or movd[1] == True and side != [ True for i in range(6)]:
         render = False
         points = [
             [pos[0],pos[1],pos[2]],
@@ -50,39 +50,44 @@ def update(camera:list, pos:list, angle:list, points:list, movd:list, render: bo
 
             points[i] = (x,y)
             i += 1
+    for i in points:
+        if (0 > i[0] > WINDOW_SIZE[0] or
+           0 > i[1] > WINDOW_SIZE[1]):
+            render = True
+        
     
     if render == False:
         global pos2
-        pos2 = False
+        pos2 = [False,0,0,0]
         
         if (camera[0] < pos[0] or camera[0] > pos[0]+1):
             if camera[0] >= (pos[0]+1) and side[0] == False:
                 e = pg.draw.polygon(screen, (36,27,40), ((points[1]), (points[2]), (points[6]), (points[5])))
                 if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                    pos2 = True
-            if camera[0] < (pos[0]) and side[1] == False:
+                    pos2[0],pos2[1] = True,1
+            elif camera[0] < (pos[0]) and side[1] == False:
                 e = pg.draw.polygon(screen, (43,73,72), ((points[3]), (points[7]), (points[4]), (points[0])))
                 if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                    pos2 = True
+                    pos2[0],pos2[1] = True,-1
             
-        if (camera[1] < pos[1] or camera[1] > pos[1]+1):
-            if camera[1] >= (pos[1]+.5) and side[2] == False:
-                e = pg.draw.polygon(screen, (67,67,67), ((points[7]), (points[6]), (points[2]), (points[3])))
-                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                    pos2 = True
-            if camera[1] < (pos[1]+.5) and side[3] == False:
-                e = pg.draw.polygon(screen, (11,11,11), ((points[0]), (points[1]), (points[5]), (points[4])))
-                if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                    pos2 = True
+        if camera[1] > pos2[1]+1 and side[2] == False:
+            e = pg.draw.polygon(screen, (67,67,67), ((points[7]), (points[6]), (points[2]), (points[3])))
+            if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+                pos2[0],pos[2] = True,1
+        if camera[1] < pos2[1]-1 and side[3] == False:
+            e = pg.draw.polygon(screen, (11,11,11), ((points[0]), (points[1]), (points[5]), (points[4])))
+            if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
+               pos2[0],pos2[2] = True,-1
         
         if camera[2] >= pos[2]+1 and side[4] == False:
             e = pg.draw.polygon(screen, (26,158,44), ((points[4]), (points[5]), (points[6]), (points[7])))
             if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                pos2 = True
-        if camera[2] < pos[2] and side[5] == False:
+                pos2[0],pos2[3] = True,1
+        elif camera[2] < pos[2] and side[5] == False:
             e = pg.draw.polygon(screen, (255,255,255), ((points[0]), (points[1]), (points[2]), (points[3])))
             if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
-                pos2 = True
+                pos2[0],pos2[3] = True,-1
+    
     return points, render, pos2
 
 def faie(pos: list):
@@ -106,16 +111,14 @@ def faie(pos: list):
         c2 += 1
 
 blocks = []
-for x in range(40):
-    for y in range(40):
-        v = noise.pnoise2(x/10, y/10, octaves=1) * 5 - 3
+for x in range(30):
+    for y in range(30):
+        v = noise.pnoise2(x/10, y/10, octaves=1, persistence=50) * 5
         v = round(v)
         db = (x+.5-camera[0])*(x+.5-camera[0])+(v+.5-camera[1])*(v+.5-camera[1])+(y+.5-camera[2])*(y+.5-camera[2])
-        
         blocks.append([db,x,v,y,[],[False, False, False, False, False, False], False])
 
-
-
+iii = 0
 c1 = 0
 for i in blocks:
     pos = [i[1],i[2],i[3]]
@@ -132,11 +135,16 @@ for i in blocks:
         if [ii[1],ii[2]+1,ii[3]] == pos:
             blocks[c1][5][3] = True
             blocks[c2][5][2] = True
+        iii += 1
+        print(iii)
         c2 += 1
     c1 += 1
+    
 
+#befor 47734281
 
- 
+timer1 = 0
+
 t = time.time()
 s = 0
 FPS = None
@@ -153,9 +161,11 @@ while run == True:
         FPS = s
         s = 0
     s += 1
-
+    
     dt = time.time()-q2
     q2 = time.time()
+    
+    timer1 += dt
     
     for event in pg.event.get():
         if event.type == pg.QUIT: run = False
@@ -191,31 +201,40 @@ while run == True:
     
     rel = pg.mouse.get_rel()
     mouse_pos = pg.mouse.get_pos()
-    rot[0] += rel[0]/20*dt
-    rot[1] += rel[1]/20*dt
+    rot[0] += rel[0]/30
+    rot[1] += rel[1]/30
     if rel != (0,0):
         movd[1] = True
     
     mouse.set_pos(WINDOW_SIZE[0]//2,WINDOW_SIZE[1]//2)
     screen.fill((36,121,150))
     
+    if action != []:
+        for i in action:
+            if i == 0:
+                rot = [0,0]
+            action = []
     if movd[0] == True:
-        
         for i in blocks:
             pos = i
             db = (pos[1]+.5-camera[0])*(pos[1]+.5-camera[0])+(pos[2]+.5-camera[1])*(pos[2]+.5-camera[1])+(pos[3]+.5-camera[2])*(pos[3]+.5-camera[2])
             i[0] = db  
         blocks.sort(reverse=True)
-        action = []
 
     for i in blocks:
         i[4], i[6], pos = update(camera,[i[1],i[2],i[3]],rot,i[4],movd,i[6],i[5])
-        if mouse.get_pressed()[2] and pos == True:
+        if mouse.get_pressed()[2] and pos[0] == True and timer1 > .5:
+            print(i)
+            timer1 = 0
             blocks.remove(i)
             faie([i[1],i[2],i[3]])
-    
+        if mouse.get_pressed()[0] and pos[0] == True and timer1 > .5:
+            timer1 = 0
+            blocks.append([0,i[1]+pos[1],i[2]+pos[2],i[3]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],False])
+            
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
-
+    
+    
     movd = [False,False]
     pg.display.set_caption(f"FPS {FPS}  frime:{s}        {rot}       {camera}")
     pg.display.update()
