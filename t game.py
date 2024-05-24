@@ -56,7 +56,7 @@ def update(camera:list, pos:list, angle:list, render: bool, size = 1):
             
     e = 0
     for i in points:
-        if not (0 < i[0] and i[0] < WINDOW_SIZE[0]) or not (0 < i[1] or i[0] < WINDOW_SIZE[1]):
+        if not (0 < i[0] or i[0] < WINDOW_SIZE[0]) or not (0 < i[1] or i[0] < WINDOW_SIZE[1]):
             e += 1
         
     if e == 8:
