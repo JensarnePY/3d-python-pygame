@@ -246,7 +246,7 @@ while run == True:
         
         i[1] = False
         for point in points:
-            if point[0] > 0 or point[0] < WINDOW_SIZE[0] or point[1] > 0 or point[1] < WINDOW_SIZE[1]:
+            if not (point[0] > 0 or point[0] < WINDOW_SIZE[0] or point[1] > 0 or point[1] < WINDOW_SIZE[1]):
                 i[1] = True
      #   print(i[1])
                     
