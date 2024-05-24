@@ -1,3 +1,4 @@
+
 import pygame as pg
 import math
 import time
@@ -8,7 +9,7 @@ pg.init()
 WINDOW_SIZE = [750, 500]
 screen = pg.display.set_mode(WINDOW_SIZE)
 
-wordl_size = (16,16)
+wordl_size = (32,32)
 
 FOV = 70
 camera = [0,-1,0]
@@ -69,7 +70,7 @@ def draw(pos, camera:list, points:list, side:list):
         e = pg.draw.polygon(screen, (36,27,40), ((points[1]), (points[2]), (points[6]), (points[5])))
         if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
             pos2[0],pos2[1] = True,1
-    elif camera[0] < (pos[0]) and side[1] == False:
+    elif camera[0] < pos[0] and side[1] == False:
         e = pg.draw.polygon(screen, (43,73,72), ((points[3]), (points[7]), (points[4]), (points[0])))
         if e.collidepoint(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2):
             pos2[0],pos2[1] = True,-1
@@ -116,7 +117,7 @@ def faie(pos: list):
 blocks = []
 for x in range(wordl_size[0]):
     for y in range(wordl_size[1]):
-        v = noise.pnoise2(x/15, y/15, octaves=1) * 5
+        v = noise.pnoise2(x/15, y/15) * 5
         v = round(v)
         
         for i in range(v, 5):
@@ -129,40 +130,50 @@ for x in range(0,wordl_size[0],8):
     for y in range(0,wordl_size[1],8):
         for z in range(-1, 1):
             chunk.append([[x//8,z//8,y//8],True])
-
-iii = 0
-c1 = 0
+            
+            
 for i in blocks:
-    chunkQ = [i[1][0],i[1][1],i[1][2]]
-    pos = [i[2],i[3],i[4]]
-    c2 = 0
+    n = noise.pnoise2(i[2]/15, i[4]/15) * 5
+    n = round(n)
     
-    for ii in blocks:
+    if i[3] == 4:
+        i[6][2] = False
+    else:
+        i[6][2] = True
+    
         
-        if (chunkQ == [ii[1][0],ii[1][1],ii[1][2]] or
-            chunkQ == [ii[1][0]+1,ii[1][1],ii[1][2]] or
-            chunkQ == [ii[1][0]-1,ii[1][1],ii[1][2]] or
-            chunkQ == [ii[1][0],ii[1][1]+1,ii[1][2]] or
-            chunkQ == [ii[1][0],ii[1][1]-1,ii[1][2]] or
-            chunkQ == [ii[1][0],ii[1][1],ii[1][2]+1] or
-            chunkQ == [ii[1][0],ii[1][1],ii[1][2]-1]
-            ):
-            if [ii[2]+1,ii[3],ii[4]] == pos:
-                blocks[c1][6][1] = True
-                blocks[c2][6][0] = True
-                
-            if [ii[2],ii[3],ii[4]+1] == pos:
-                blocks[c1][6][5] = True
-                blocks[c2][6][4] = True 
-                
-            if [ii[2],ii[3]+1,ii[4]] == pos:
-                blocks[c1][6][3] = True
-                blocks[c2][6][2] = True
-            iii += 1
-        c2 += 1
-    c1 += 1
+    if n < i[3]:
+        i[6][3] = True
+    
+    n = noise.pnoise2(i[2]/15, (i[4]/15)-1/15) * 5
+    n = round(n)
+    
+    if n <= i[3]:
+        i[6][5] = True
+    
+    n = noise.pnoise2(i[2]/15, (i[4]/15)+1/15) * 5
+    n = round(n)
+    
+    if n <= i[3]:
+        i[6][4] = True
+        
+    n = noise.pnoise2((i[2]/15)-1/15, i[4]/15) * 5
+    n = round(n)
+    
+    if n <= i[3]:
+        i[6][1] = True
+    
+    n = noise.pnoise2((i[2]/15)+1/15, i[4]/15) * 5
+    n = round(n)
+    
+    if n <= i[3]:
+        i[6][0] = True
+    
+    
 
-print(iii)
+
+
+
 
 timer1 = 0
 t = time.time()
@@ -242,38 +253,35 @@ while run == True:
     
     
     for i in chunk:
-        points, sht = update(camera,i[0],rot,[False for _ in range(6)], 8)
+        points, sht = update(camera,[i[0][0]*8,i[0][1]*8,i[0][2]*8],rot,[False for _ in range(6)], 8)
         
         i[1] = False
         for point in points:
-            if not (point[0] > 0 or point[0] < WINDOW_SIZE[0] or point[1] > 0 or point[1] < WINDOW_SIZE[1]):
-                i[1] = True
-     #   print(i[1])
+            if point[0] > 0 and point[0] < WINDOW_SIZE[0] and point[1] > 0 and point[1] < WINDOW_SIZE[1]:
+                    i[1] = True
                     
     for i in blocks:
-        e = False
         for ii in chunk:
             if ii[0] == i[1]:
-                e = ii[1]
+                i[7][1] = ii[1]
                 break
-        
-        if movd != [False,False] and i[6] != [True for i in range(6)] and e == True:
-            i[5], i[7] = update(camera,[i[2],i[3],i[4]],rot,i[7])
-        #    v += 8
-            
-        if i[7][0] == True and e == True:
-            pos = draw([i[2],i[3],i[4]], camera, i[5], i[6])
-            
-            
-        
-        if mouse.get_pressed()[2] and pos[0] == True and timer1 > .5:
-            timer1 = 0
-            blocks.remove(i)
-            faie([i[2],i[3],i[4]])
-        if mouse.get_pressed()[0] and pos[0] == True and timer1 > .5:
-            timer1 = 0
-            blocks.append([0,[0,0,0],i[2]+pos[1],i[3]+pos[2],i[4]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],[False,True]])
-            
+        if i[7][1] == True:
+            if movd != [False,False] and i[6] != [True for i in range(6)]:
+                i[5], i[7] = update(camera,[i[2],i[3],i[4]],rot,i[7])
+                v += 1
+                
+            if i[7][0] == True:
+                pos = draw([i[2],i[3],i[4]], camera, i[5], i[6])
+                
+                
+            if mouse.get_pressed()[2] and pos[0] == True and timer1 > .5:
+                timer1 = 0
+                blocks.remove(i)
+                faie([i[2],i[3],i[4]])
+            if mouse.get_pressed()[0] and pos[0] == True and timer1 > .5:
+                timer1 = 0
+                blocks.append([0,[0,0,0],i[2]+pos[1],i[3]+pos[2],i[4]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],[False,True]])
+             
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
     print(v)
     v = 0
