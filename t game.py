@@ -228,7 +228,6 @@ while run == True:
             
     blocks.sort(reverse=True)
     for i in chunk:
-      #  i[2] = (i[0][0]+4-camera[0])*(i[0][0]+4-camera[0])+(i[0][1]+4-camera[1])*(i[0][1]+4-camera[1])+(i[0][2]+4-camera[2])*(i[0][2]+4-camera[2])
         points, sht = update(camera,[i[0][0]*8,i[0][1]*8,i[0][2]*8],rot,[False for _ in range(6)], 8)
         
         i[1] = False
@@ -238,24 +237,24 @@ while run == True:
     for i in blocks:
         i[7][1] = chunk[i[8]][1]
         
-        if i[7][1] == True and i[7][0] == True:
+        if i[7][1] == True:
             i[0] = (i[2]+.5-camera[0])*(i[2]+.5-camera[0])+(i[3]+.5-camera[1])*(i[3]+.5-camera[1])+(i[4]+.5-camera[2])*(i[4]+.5-camera[2])
             if movd != [False,False] and i[6] != [True for i in range(6)]:
                 i[5], i[7] = update(camera,[i[2],i[3],i[4]],rot,i[7])
                 v += 1
+            if i[7][0] == True:
+                if i[0] < 200:
+                    pos = draw_and_collide([i[2],i[3],i[4]], camera, i[5], i[6])
+                else:
+                    draw([i[2],i[3],i[4]], camera, i[5], i[6])
                 
-            if i[0] < 200:
-                pos = draw_and_collide([i[2],i[3],i[4]], camera, i[5], i[6])
-            else:
-                draw([i[2],i[3],i[4]], camera, i[5], i[6])
-            
-            if mouse.get_pressed()[2] and pos[0] == True and timer1 > .5:
-                timer1 = 0
-                blocks.remove(i)
-            if mouse.get_pressed()[0] and pos[0] == True and timer1 > .5:
-                timer1 = 0
-                blocks.append([0,[0,0,0],i[2]+pos[1],i[3]+pos[2],i[4]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],[False,True]])
-             
+                if mouse.get_pressed()[2] and pos[0] == True and timer1 > .5:
+                    timer1 = 0
+                    blocks.remove(i)
+                if mouse.get_pressed()[0] and pos[0] == True and timer1 > .5:
+                    timer1 = 0
+                    blocks.append([0,[0,0,0],i[2]+pos[1],i[3]+pos[2],i[4]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],[False,True]])
+                 
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
     print(v)
     v = 0
