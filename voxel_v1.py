@@ -226,7 +226,7 @@ while run == True:
                 rot = [0,0]
             action = []
             
-    blocks.sort(reverse=True)
+    blocks.sort()
     for i in chunk:
         points, sht = update(camera,[i[0][0]*8,i[0][1]*8,i[0][2]*8],rot,[False for _ in range(6)], 8)
         
@@ -234,7 +234,7 @@ while run == True:
         for point in points:
             if point[0] > 0 and point[0] < WINDOW_SIZE[0] and point[1] > 0 and point[1] < WINDOW_SIZE[1]:
                     i[1] = True
-    for i in blocks:
+    for i in blocks[::-1]:
         i[7][1] = chunk[i[8]][1]
         
         if i[7][1] == True:
@@ -256,7 +256,7 @@ while run == True:
                     blocks.append([0,[0,0,0],i[2]+pos[1],i[3]+pos[2],i[4]+pos[3],[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],[False,False,False,False,False,False],[False,True]])
                  
     pg.draw.circle(screen, (255,255,255), (WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), 5)
-    print(v)
+
     v = 0
     movd = [False,False]
     pg.display.update()
